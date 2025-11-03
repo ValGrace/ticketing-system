@@ -1,0 +1,154 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Ticket Resell Platform - System Monitoring",
+    "tags": ["ticket-platform", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "HTTP Request Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ticket_platform_http_requests_total[5m])",
+            "legendFormat": "{{method}} {{route}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Requests/sec"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "HTTP Response Time",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(ticket_platform_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(ticket_platform_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "50th percentile"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Seconds"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ticket_platform_http_requests_total{status_code=~\"5..\"}[5m]) / rate(ticket_platform_http_requests_total[5m]) * 100",
+            "legendFormat": "5xx Error Rate %"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Percentage"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Database Query Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(ticket_platform_database_query_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Seconds"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Memory Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "ticket_platform_process_resident_memory_bytes / 1024 / 1024",
+            "legendFormat": "RSS Memory (MB)"
+          },
+          {
+            "expr": "ticket_platform_nodejs_heap_size_used_bytes / 1024 / 1024",
+            "legendFormat": "Heap Used (MB)"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "MB"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Business Metrics",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "increase(ticket_platform_listings_total[1h])",
+            "legendFormat": "New Listings (1h)"
+          },
+          {
+            "expr": "increase(ticket_platform_transactions_total[1h])",
+            "legendFormat": "Transactions (1h)"
+          },
+          {
+            "expr": "increase(ticket_platform_user_registrations_total[1h])",
+            "legendFormat": "New Users (1h)"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Fraud Detection",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ticket_platform_fraud_detection_events_total[5m])",
+            "legendFormat": "{{type}} - {{action}}"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Events/sec"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Cache Performance",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ticket_platform_cache_hits_total[5m]) / (rate(ticket_platform_cache_hits_total[5m]) + rate(ticket_platform_cache_misses_total[5m])) * 100",
+            "legendFormat": "Cache Hit Rate %"
+          }
+        ],
+        "yAxes": [
+          {
+            "label": "Percentage"
+          }
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}
