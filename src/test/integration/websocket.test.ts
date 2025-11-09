@@ -11,8 +11,8 @@ import { expect } from '@jest/globals'
 describe('WebSocket Integration Tests', () => {
   let httpServer: any;
   let port: number;
-  let clientSocket1 = Socket;
-  let clientSocket2 =Socket;
+  let clientSocket1: typeof Socket;
+  let clientSocket2 : typeof Socket;
   let token1: string;
   let token2: string;
 
