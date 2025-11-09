@@ -11,7 +11,7 @@ import {
   FeatureFlag,
   ServiceHealthTracker
 } from '../../utils/gracefulDegradation';
-import { describe, it, expect } from '@jest/globals';
+import { expect } from '@jest/globals';
 
 describe('withFallback', () => {
   it('should return primary result on success', async () => {
@@ -92,7 +92,7 @@ describe('withRetry', () => {
 
     await expect(
       withRetry(fn, {
-        maxRetries: 3,
+        maxRetries: 5,
         initialDelay: 10,
         retryableErrors: ['RetryableError']
       })

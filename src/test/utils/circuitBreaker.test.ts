@@ -207,7 +207,7 @@ describe('CircuitBreaker', () => {
       } catch (e) {}
 
       expect(failures.length).toBe(1);
-      expect(failures[0].message).toBe('test failure');
+      expect(failures[0]?.message).toBe('test failure');
     });
   });
 

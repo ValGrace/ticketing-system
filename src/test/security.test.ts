@@ -77,7 +77,7 @@ describe('Security Middleware Tests', () => {
   describe('SQL Injection Detection', () => {
     it('should block SQL injection attempts', async () => {
       app.use(detectSQLInjection);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -89,7 +89,7 @@ describe('Security Middleware Tests', () => {
 
     it('should block UNION-based SQL injection', async () => {
       app.use(detectSQLInjection);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -101,7 +101,7 @@ describe('Security Middleware Tests', () => {
 
     it('should allow legitimate queries', async () => {
       app.use(detectSQLInjection);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -113,7 +113,7 @@ describe('Security Middleware Tests', () => {
 
     it('should detect SQL injection in query parameters', async () => {
       app.use(detectSQLInjection);
-      app.get('/test', (req, res) => {
+      app.get('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -126,7 +126,7 @@ describe('Security Middleware Tests', () => {
   describe('XSS Detection', () => {
     it('should block script tag injection', async () => {
       app.use(detectXSS);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -138,7 +138,7 @@ describe('Security Middleware Tests', () => {
 
     it('should block event handler injection', async () => {
       app.use(detectXSS);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -150,7 +150,7 @@ describe('Security Middleware Tests', () => {
 
     it('should block iframe injection', async () => {
       app.use(detectXSS);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -162,7 +162,7 @@ describe('Security Middleware Tests', () => {
 
     it('should allow safe HTML entities', async () => {
       app.use(detectXSS);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -176,7 +176,7 @@ describe('Security Middleware Tests', () => {
   describe('Path Traversal Detection', () => {
     it('should block path traversal attempts', async () => {
       app.use(detectPathTraversal);
-      app.get('/test', (req, res) => {
+      app.get('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -198,7 +198,7 @@ describe('Security Middleware Tests', () => {
 
     it('should allow legitimate file paths', async () => {
       app.use(detectPathTraversal);
-      app.get('/test', (req, res) => {
+      app.get('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -216,7 +216,7 @@ describe('Security Middleware Tests', () => {
 
     it('should allow initial login attempts', async () => {
       app.use(bruteForceProtection);
-      app.post('/login', (req, res) => {
+      app.post('/login', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -228,7 +228,7 @@ describe('Security Middleware Tests', () => {
 
     it('should block after max failed attempts', async () => {
       app.use(bruteForceProtection);
-      app.post('/login', (req, res) => {
+      app.post('/login', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -262,7 +262,7 @@ describe('Security Middleware Tests', () => {
   describe('Content-Type Validation', () => {
     it('should require Content-Type for POST requests', async () => {
       app.use(validateContentType);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -275,7 +275,7 @@ describe('Security Middleware Tests', () => {
 
     it('should accept application/json', async () => {
       app.use(validateContentType);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -288,7 +288,7 @@ describe('Security Middleware Tests', () => {
 
     it('should accept multipart/form-data', async () => {
       app.use(validateContentType);
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -315,7 +315,7 @@ describe('Security Middleware Tests', () => {
   describe('Request Size Limit', () => {
     it('should reject requests exceeding size limit', async () => {
       app.use(requestSizeLimit(1024)); // 1KB limit
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
@@ -330,7 +330,7 @@ describe('Security Middleware Tests', () => {
 
     it('should accept requests within size limit', async () => {
       app.use(requestSizeLimit(10 * 1024 * 1024)); // 10MB limit
-      app.post('/test', (req, res) => {
+      app.post('/test', (_req, res) => {
         res.json({ success: true });
       });
 
