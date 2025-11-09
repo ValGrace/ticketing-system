@@ -9,11 +9,11 @@ describe('Database Integration Tests with Test Containers', () => {
   beforeAll(async () => {
     // Initialize test database connection
     pool = new Pool({
-      host: process.env.TEST_DB_HOST || 'localhost',
-      port: parseInt(process.env.TEST_DB_PORT || '5432'),
-      database: process.env.TEST_DB_NAME || 'ticket_resell_test',
-      user: process.env.TEST_DB_USER || 'postgres',
-      password: process.env.TEST_DB_PASSWORD || 'postgres'
+      host: process.env["TEST_DB_HOST"] || 'localhost',
+      port: parseInt(process.env["TEST_DB_PORT"] || '5432'),
+      database: process.env["TEST_DB_NAME"] || 'ticket_resell_test',
+      user: process.env["TEST_DB_USER"] || 'postgres',
+      password: process.env["TEST_DB_PASSWORD"] || 'postgres'
     });
 
     db = {
@@ -455,7 +455,7 @@ describe('Database Integration Tests with Test Containers', () => {
 async function runMigrations(db: DatabaseConnection): Promise<void> {
   // Run necessary migrations for test database
   // This is a simplified version - in production, use a proper migration tool
-  console.log('Running test database migrations...');
+  console.log('Running test database migrations...', db);
 }
 
 async function cleanupDatabase(db: DatabaseConnection): Promise<void> {
