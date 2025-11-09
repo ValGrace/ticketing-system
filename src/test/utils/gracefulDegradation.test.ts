@@ -11,6 +11,7 @@ import {
   FeatureFlag,
   ServiceHealthTracker
 } from '../../utils/gracefulDegradation';
+import { describe, it, expect } from '@jest/globals';
 
 describe('withFallback', () => {
   it('should return primary result on success', async () => {

@@ -8,6 +8,7 @@ import {
   CircuitState,
   CircuitBreakerError
 } from '../../utils/circuitBreaker';
+import { describe, it, expect, beforeEach } from '@jest/globals';
 
 describe('CircuitBreaker', () => {
   let circuitBreaker: CircuitBreaker;
