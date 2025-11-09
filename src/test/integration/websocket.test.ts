@@ -1,5 +1,7 @@
-import { io as ioClient, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { createServer } from 'http';
+const { io } = require('socket.io-client');
+const ioClient = io;
 import { AddressInfo } from 'net';
 import express from 'express';
 import { webSocketService } from '../../services/WebSocketService';
@@ -9,8 +11,8 @@ import { expect } from '@jest/globals'
 describe('WebSocket Integration Tests', () => {
   let httpServer: any;
   let port: number;
-  let clientSocket1: Socket;
-  let clientSocket2: Socket;
+  let clientSocket1 = Socket;
+  let clientSocket2 =Socket;
   let token1: string;
   let token2: string;
 
@@ -49,12 +51,12 @@ describe('WebSocket Integration Tests', () => {
 
   describe('Connection and Authentication', () => {
     it('should connect with valid token', (done) => {
-      clientSocket1 = ioClient(`http://localhost:${port}`, {
+      clientSocket1 = io(`http://localhost:${port}`, {
         auth: { token: token1 },
         transports: ['websocket'],
       });
 
-      clientSocket1.on('connected', (data) => {
+      clientSocket1.on('connected', (data: any) => {
         expect(data.userId).toBe('user1');
         expect(data.socketId).toBeDefined();
         done();
@@ -66,7 +68,7 @@ describe('WebSocket Integration Tests', () => {
         transports: ['websocket'],
       });
 
-      clientSocket1.on('connect_error', (error) => {
+      clientSocket1.on('connect_error', (error: Error) => {
         expect(error.message).toContain('Authentication');
         done();
       });
@@ -100,7 +102,7 @@ describe('WebSocket Integration Tests', () => {
         clientSocket1.emit('subscribe:listing', listingId);
 
         // Listen for updates
-        clientSocket1.on('listing:updated', (update) => {
+        clientSocket1.on('listing:updated', (update: any) => {
           expect(update.listingId).toBe(listingId);
           expect(update.status).toBe('sold');
           done();
@@ -128,7 +130,7 @@ describe('WebSocket Integration Tests', () => {
         
         clientSocket1.emit('subscribe:listing', listingId);
 
-        clientSocket1.on('listing:price_changed', (change) => {
+        clientSocket1.on('listing:price_changed', (change: any) => {
           expect(change.listingId).toBe(listingId);
           expect(change.oldPrice).toBe(100);
           expect(change.newPrice).toBe(80);
@@ -197,7 +199,7 @@ describe('WebSocket Integration Tests', () => {
         
         clientSocket1.emit('subscribe:transaction', transactionId);
 
-        clientSocket1.on('transaction:updated', (update) => {
+        clientSocket1.on('transaction:updated', (update: any) => {
           expect(update.transactionId).toBe(transactionId);
           expect(update.status).toBe('paid');
           expect(update.buyerId).toBe('user1');
@@ -238,7 +240,7 @@ describe('WebSocket Integration Tests', () => {
       };
 
       clientSocket1.on('connected', () => {
-        clientSocket1.on('transaction:updated', (update) => {
+        clientSocket1.on('transaction:updated', (update: any) => {
           expect(update.transactionId).toBe(transactionId);
           expect(update.buyerId).toBe('user1');
           checkDone();
@@ -246,7 +248,7 @@ describe('WebSocket Integration Tests', () => {
       });
 
       clientSocket2.on('connected', () => {
-        clientSocket2.on('transaction:updated', (update) => {
+        clientSocket2.on('transaction:updated', (update: any) => {
           expect(update.transactionId).toBe(transactionId);
           expect(update.sellerId).toBe('user2');
           checkDone();
@@ -278,7 +280,7 @@ describe('WebSocket Integration Tests', () => {
       });
 
       clientSocket2.on('connected', () => {
-        clientSocket2.on('message:received', (message) => {
+        clientSocket2.on('message:received', (message: any) => {
           expect(message.senderId).toBe('user1');
           expect(message.receiverId).toBe('user2');
           expect(message.message).toBe('Hello user2!');
@@ -308,7 +310,7 @@ describe('WebSocket Integration Tests', () => {
       });
 
       clientSocket1.on('connected', () => {
-        clientSocket1.on('message:sent', (message) => {
+        clientSocket1.on('message:sent', (message: any) => {
           expect(message.senderId).toBe('user1');
           expect(message.receiverId).toBe('user2');
           expect(message.id).toBeDefined();
@@ -338,7 +340,7 @@ describe('WebSocket Integration Tests', () => {
       });
 
       clientSocket2.on('connected', () => {
-        clientSocket2.on('typing:start', (data) => {
+        clientSocket2.on('typing:start', (data: any) => {
           expect(data.userId).toBe('user1');
           done();
         });
@@ -424,14 +426,14 @@ describe('WebSocket Integration Tests', () => {
       };
 
       clientSocket1.on('connected', () => {
-        clientSocket1.on('system:announcement', (data) => {
+        clientSocket1.on('system:announcement', (data: any) => {
           expect(data.message).toBe('System maintenance scheduled');
           checkDone();
         });
       });
 
       clientSocket2.on('connected', () => {
-        clientSocket2.on('system:announcement', (data) => {
+        clientSocket2.on('system:announcement', (data: any) => {
           expect(data.message).toBe('System maintenance scheduled');
           checkDone();
         });
