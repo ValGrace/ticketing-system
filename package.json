@@ -15,7 +15,7 @@
     "test:security": "jest --testPathPattern=test/security",
     "test:performance": "jest --testPathPattern=test/performance --maxWorkers=1",
     "test:all": "npm run test:integration && npm run test:e2e && npm run test:security && npm run test:performance",
-    "migrate:test": "ts-node src/migrations/run-migrations.ts",
+    "migrate:test": "ts-node src/utils/migrationRunner.ts",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
