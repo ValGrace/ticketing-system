@@ -1,5 +1,5 @@
 import { validateImageFile, validateImageFiles } from '../utils/fileUpload';
-
+import { expect } from '@jest/globals'
 describe('File Upload Security Tests', () => {
   describe('validateImageFile', () => {
     it('should reject files that are too large', () => {

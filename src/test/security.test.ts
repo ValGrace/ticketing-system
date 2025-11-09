@@ -1,5 +1,6 @@
 import request from 'supertest';
 import express, { Express } from 'express';
+import { expect } from '@jest/globals'
 import {
   sanitizeInput,
   detectSQLInjection,

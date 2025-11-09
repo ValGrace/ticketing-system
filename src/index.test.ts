@@ -1,5 +1,6 @@
 import request from 'supertest';
 import app from './index';
+import { expect } from '@jest/globals'
 
 describe('Health Check', () => {
   it('should return 200 OK for health endpoint', async () => {

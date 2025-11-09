@@ -2,6 +2,7 @@ import request from 'supertest';
 import express from 'express';
 import { createApiGateway, setupApiGateway } from '../routes/apiGateway';
 import { createApp } from '../index';
+import { expect } from '@jest/globals'
 
 describe('API Gateway', () => {
   let app: express.Application;

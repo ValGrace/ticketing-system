@@ -1,5 +1,6 @@
 import { register } from '../config/metrics';
 import logger from '../config/logger';
+import { expect } from '@jest/globals'
 
 describe('Monitoring System Tests', () => {
   describe('Metrics Collection', () => {
