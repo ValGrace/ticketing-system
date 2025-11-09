@@ -2,6 +2,7 @@ import request from 'supertest';
 import express from 'express';
 import { createAuthRoutes } from '../../routes/auth';
 import { DatabaseConnection } from '../../types';
+import { expect } from '@jest/globals'
 
 // Mock database connection
 const mockConnection: DatabaseConnection = {

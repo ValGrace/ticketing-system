@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 import { Pool } from 'pg';
 import { createClient } from 'redis';
 import { Client } from '@elastic/elasticsearch';
@@ -15,6 +16,9 @@ import logger from './config/logger';
 import { HealthCheckService } from './services/HealthCheckService';
 import { initializeAlerting } from './config/alerting';
 import { NotificationService } from './services/NotificationService';
+
+// WebSocket imports
+import { webSocketService } from './services/WebSocketService';
 
 import { UserController } from './controllers/UserController';
 import { ListingController } from './controllers/ListingController';
@@ -62,12 +66,12 @@ function createApp(dbConnection?: DatabaseConnection): express.Application {
 
   // API Gateway configuration
   const apiGatewayConfig: ApiGatewayConfig = {
-    enableRateLimit: process.env.NODE_ENV === 'production',
+    enableRateLimit: process.env["NODE_ENV"] === 'production',
     enableCors: true,
     enableCompression: true,
-    enableDocs: process.env.NODE_ENV !== 'production',
+    enableDocs: process.env["NODE_ENV"] !== 'production',
     enableMetrics: true,
-    requestTimeout: parseInt(process.env.REQUEST_TIMEOUT || '30000')
+    requestTimeout: parseInt(process.env["REQUEST_TIMEOUT"] || '30000')
   };
 
   // Setup API Gateway with all middleware and routes
@@ -87,7 +91,7 @@ async function initializeMonitoring(): Promise<void> {
       port: parseInt(process.env['DB_PORT'] || '5432'),
       database: process.env['DB_NAME'] || 'ticket_platform',
       user: process.env['DB_USER'] || 'postgres',
-      password: process.env['DB_PASSWORD'] || 'password',
+      password: process.env['DB_PASSWORD'] || 'postgres',
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
@@ -176,7 +180,12 @@ if (require.main === module) {
   
   initializeApp().then(() => {
     const app = createApp();
-    const server = app.listen(PORT, () => {
+    const httpServer = createServer(app);
+    
+    // Initialize WebSocket service
+    webSocketService.initialize(httpServer);
+    
+    httpServer.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`, {
         port: PORT,
         environment: process.env['NODE_ENV'] || 'development',
@@ -188,13 +197,15 @@ if (require.main === module) {
         readiness: `http://localhost:${PORT}/health/ready`,
         metrics: `http://localhost:${PORT}/metrics`,
         info: `http://localhost:${PORT}/health/info`,
+        websocket: `ws://localhost:${PORT}`,
       });
     });
 
     // Graceful shutdown
     const gracefulShutdown = () => {
       logger.info('Starting graceful shutdown...');
-      server.close(() => {
+      webSocketService.shutdown();
+      httpServer.close(() => {
         logger.info('HTTP server closed');
         process.exit(0);
       });

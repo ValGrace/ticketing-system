@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createApp } from '../../index';
-
+import { expect } from '@jest/globals'
 // Mock SearchService for integration tests
 jest.mock('../../services/SearchService');
 

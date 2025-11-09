@@ -5,6 +5,7 @@ import { MigrationRunner } from '../../utils/migrationRunner';
 import { UserRepository } from '../../models/UserRepository';
 import { NotificationService } from '../../services/NotificationService';
 import { AuthService } from '../../services/AuthService';
+import { expect } from '@jest/globals'
 
 describe('Notification Integration Tests', () => {
   let app: any;

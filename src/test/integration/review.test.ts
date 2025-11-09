@@ -3,6 +3,7 @@ import { createApp } from '../../index';
 import { DatabaseConnection } from '../../types';
 import { connectDatabase, database } from '../../config/database';
 import { MigrationRunner } from '../../utils/migrationRunner';
+import { expect } from '@jest/globals'
 
 describe('Review Integration Tests', () => {
   let app: any;

@@ -6,8 +6,6 @@ import {
   updatePreferencesSchema,
   sendTestNotificationSchema,
   sendBulkNotificationSchema,
-  createTemplateSchema,
-  updateTemplateSchema,
   paginationSchema,
   notificationIdSchema,
   templateQuerySchema,

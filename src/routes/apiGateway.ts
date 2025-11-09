@@ -11,6 +11,7 @@ import { createUserRoutes } from './user';
 import { createListingRoutes } from './listing';
 import { createPaymentRoutes } from './payment';
 import { createFraudRoutes } from './fraud';
+import { createMessagingRouter } from './messaging';
 import searchRoutes from './search';
 import reviewRoutes from './review';
 import notificationRoutes from './notification';
@@ -63,7 +64,7 @@ export const createApiGateway = (
 
   // Health check routes (before rate limiting)
   router.use('/health', healthRoutes);
-  router.use('/metrics', (req: Request, res: Response) => {
+  router.use('/metrics', (_req: Request, res: Response) => {
     // Prometheus metrics endpoint
     const register = require('prom-client').register;
     res.set('Content-Type', register.contentType);
@@ -111,15 +112,16 @@ export const createApiGateway = (
   router.use('/api/reviews', reviewRoutes);
   router.use('/api/notifications', notificationRoutes);
   router.use('/api/fraud', createFraudRoutes(dependencies.database));
+  router.use('/api/messages', createMessagingRouter(dependencies.database));
 
   // API Gateway status endpoint
   router.get('/api/status', (req: Request, res: Response) => {
     res.json({
       status: 'healthy',
-      version: process.env.API_VERSION || '1.0.0',
+      version: process.env["API_VERSION"] || '1.0.0',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development',
+      environment: process.env["NODE_ENV"] || 'development',
       features: {
         rateLimit: config.enableRateLimit,
         cors: config.enableCors,
@@ -136,7 +138,7 @@ export const createApiGateway = (
     res.json({
       name: 'Ticket Resell Platform API',
       description: 'A secure marketplace API for buying and selling tickets',
-      version: process.env.API_VERSION || '1.0.0',
+      version: process.env["API_VERSION"] || '1.0.0',
       documentation: config.enableDocs ? '/docs' : null,
       health: '/health',
       metrics: config.enableMetrics ? '/metrics' : null,
@@ -148,7 +150,8 @@ export const createApiGateway = (
         payments: '/api/payments',
         reviews: '/api/reviews',
         notifications: '/api/notifications',
-        fraud: '/api/fraud'
+        fraud: '/api/fraud',
+        messages: '/api/messages'
       },
       rateLimit: config.enableRateLimit ? {
         general: '1000 requests per 15 minutes',
@@ -167,7 +170,7 @@ export const createApiGateway = (
   router.get('/', (req: Request, res: Response) => {
     res.json({
       message: 'Ticket Resell Platform API Gateway',
-      version: process.env.API_VERSION || '1.0.0',
+      version: process.env["API_VERSION"] || '1.0.0',
       documentation: config.enableDocs ? '/docs' : null,
       health: '/health',
       api: '/api',
@@ -243,7 +246,8 @@ export const setupApiGateway = (app: any, dependencies: any, config?: ApiGateway
       '/api/payments',
       '/api/reviews',
       '/api/notifications',
-      '/api/fraud'
+      '/api/fraud',
+      '/api/messages'
     ]
   });
 

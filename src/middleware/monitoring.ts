@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import logger, { createChildLogger, logRequest } from '../config/logger';
+import  { createChildLogger, logRequest } from '../config/logger';
 import { recordHttpRequest } from '../config/metrics';
 
 // Extend Request interface to include monitoring properties
@@ -23,7 +23,7 @@ export const correlationIdMiddleware = (req: Request, res: Response, next: NextF
   req.startTime = Date.now();
   
   // Create child logger with correlation ID
-  req.logger = createChildLogger(correlationId, req.user?.id);
+  req.logger = createChildLogger(correlationId, req.user?.userId);
   
   // Add correlation ID to response headers
   res.setHeader('X-Correlation-ID', correlationId);
@@ -41,7 +41,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
     url: req.originalUrl,
     userAgent: req.get('User-Agent'),
     ip: req.ip,
-    userId: req.user?.id,
+    userId: req.user?.userId,
   });
   
   // Override res.end to capture response
@@ -57,6 +57,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
     
     // Call original end method
     originalEnd.call(this, chunk, encoding);
+    return this
   };
   
   next();
@@ -77,7 +78,7 @@ export const errorLoggingMiddleware = (error: Error, req: Request, res: Response
     url: req.originalUrl,
     statusCode: res.statusCode,
     responseTime,
-    userId: req.user?.id,
+    userId: req.user?.userId,
   });
   
   // Record error metrics
@@ -193,7 +194,7 @@ export const monitorDatabaseQuery = async <T>(
     
     // Log slow queries (> 100ms)
     if (duration > 100) {
-      (logger || global.logger).warn('Slow database query', {
+      (logger || global).warn('Slow database query', {
         operation,
         table,
         duration,
@@ -208,7 +209,7 @@ export const monitorDatabaseQuery = async <T>(
   } catch (error) {
     const duration = Date.now() - startTime;
     
-    (logger || global.logger).error('Database query failed', {
+    (logger || global).error('Database query failed', {
       operation,
       table,
       duration,

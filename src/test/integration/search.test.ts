@@ -5,6 +5,7 @@ import { SearchService } from '../../services/SearchService';
 import { TicketListingRepository } from '../../models/TicketListingRepository';
 import { UserRepository } from '../../models/UserRepository';
 import { CreateListingInput, CreateUserInput } from '../../types';
+import { expect } from '@jest/globals'
 
 // Mock Elasticsearch for integration tests
 jest.mock('../../services/SearchService');

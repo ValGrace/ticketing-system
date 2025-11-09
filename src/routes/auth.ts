@@ -15,6 +15,7 @@ import {
   refreshTokenSchema,
   changePasswordSchema
 } from '../validation/auth';
+import { bruteForceProtection } from '../middleware/security';
 
 /**
  * @swagger
@@ -164,6 +165,7 @@ export function createAuthRoutes(connection: DatabaseConnection): Router {
    */
   router.post('/login',
     authRateLimit,
+    bruteForceProtection,
     validateRequest(loginSchema),
     authController.login
   );

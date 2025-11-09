@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import { NotificationService } from '../services/NotificationService';
 import { database } from '../config/database';
-import { 
+import {
   UpdateNotificationPreferencesInput,
   NotificationType,
-  NotificationChannel 
+  NotificationChannel,
+  NotificationTemplate
 } from '../types';
 
 export class NotificationController {
@@ -23,8 +24,8 @@ export class NotificationController {
         return;
       }
 
-      const limit = parseInt(req.query.limit as string) || 50;
-      const offset = parseInt(req.query.offset as string) || 0;
+      const limit = parseInt(req.query['limit'] as string) || 50;
+      const offset = parseInt(req.query['offset'] as string) || 0;
 
       const notifications = await this.notificationService.getUserNotifications(userId, limit, offset);
       const unreadCount = await this.notificationService.getUnreadCount(userId);
@@ -159,9 +160,9 @@ export class NotificationController {
 
       res.json({
         success: true,
-        data: { 
+        data: {
           message: 'All notifications marked as read',
-          markedCount 
+          markedCount
         }
       });
     } catch (error) {
@@ -288,7 +289,7 @@ export class NotificationController {
 
       const { type, channel } = req.query;
 
-      let templates;
+      let templates: Array<NotificationTemplate> = [];
       if (type && channel) {
         const template = await this.notificationService.getTemplate(
           type as NotificationType,
@@ -373,7 +374,7 @@ export class NotificationController {
         return;
       }
 
-      const limit = parseInt(req.query.limit as string) || 100;
+      const limit = parseInt(req.query['limit'] as string) || 100;
       const result = await this.notificationService.processPendingNotifications(limit);
 
       res.json({

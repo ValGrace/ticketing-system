@@ -1,11 +1,12 @@
 import { Pool, PoolConfig } from 'pg';
 import { DatabaseConfig, DatabaseConnection } from '../types';
+require('dotenv').config();
 
 // Database configuration
 export const getDatabaseConfig = (): DatabaseConfig => {
   // Support both DATABASE_URL and individual environment variables
-  const databaseUrl = process.env['DATABASE_URL'];
-  
+  const databaseUrl = process.env['DATABASE_TEST_URL'];
+  console.log('DB_PASS',databaseUrl);
   if (databaseUrl) {
     // Parse DATABASE_URL format: postgresql://user:password@host:port/database
     const url = new URL(databaseUrl);

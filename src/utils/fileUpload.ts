@@ -138,11 +138,16 @@ export function extractS3KeyFromUrl(url: string): string | null {
   }
 }
 
-// Validate image file
+// Validate image file with enhanced security checks
 export function validateImageFile(file: Express.Multer.File): { isValid: boolean; error?: string } {
   // Check file size (5MB max)
   if (file.size > 5 * 1024 * 1024) {
     return { isValid: false, error: 'File size exceeds 5MB limit' };
+  }
+
+  // Check minimum file size (1KB to prevent empty/malicious files)
+  if (file.size < 1024) {
+    return { isValid: false, error: 'File is too small or empty' };
   }
 
   // Check file type
@@ -156,7 +161,87 @@ export function validateImageFile(file: Express.Multer.File): { isValid: boolean
     return { isValid: false, error: 'File is empty' };
   }
 
+  // Validate file extension matches mime type
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mimeTypeExtensions: { [key: string]: string[] } = {
+    'image/jpeg': ['.jpg', '.jpeg'],
+    'image/png': ['.png'],
+    'image/webp': ['.webp']
+  };
+
+  const allowedExtensions = mimeTypeExtensions[file.mimetype] || [];
+  if (!allowedExtensions.includes(ext)) {
+    return { isValid: false, error: 'File extension does not match file type' };
+  }
+
+  // Check for malicious file names
+  if (containsMaliciousFileName(file.originalname)) {
+    return { isValid: false, error: 'Invalid file name' };
+  }
+
+  // Validate file signature (magic numbers) for common image types
+  if (!validateFileSignature(file.buffer, file.mimetype)) {
+    return { isValid: false, error: 'File content does not match declared type' };
+  }
+
   return { isValid: true };
+}
+
+// Check for malicious file names
+function containsMaliciousFileName(filename: string): boolean {
+  // Check for path traversal attempts
+  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    return true;
+  }
+
+  // Check for null bytes
+  if (filename.includes('\0')) {
+    return true;
+  }
+
+  // Check for executable extensions hidden in name
+  const dangerousPatterns = [
+    /\.exe$/i,
+    /\.bat$/i,
+    /\.cmd$/i,
+    /\.sh$/i,
+    /\.php$/i,
+    /\.js$/i,
+    /\.html$/i,
+    /\.svg$/i // SVG can contain scripts
+  ];
+
+  return dangerousPatterns.some(pattern => pattern.test(filename));
+}
+
+// Validate file signature (magic numbers)
+function validateFileSignature(buffer: Buffer, mimetype: string): boolean {
+  if (!buffer || buffer.length < 4) {
+    return false;
+  }
+
+  // Check magic numbers for different file types
+  const signatures: { [key: string]: number[][] } = {
+    'image/jpeg': [
+      [0xFF, 0xD8, 0xFF] // JPEG
+    ],
+    'image/png': [
+      [0x89, 0x50, 0x4E, 0x47] // PNG
+    ],
+    'image/webp': [
+      [0x52, 0x49, 0x46, 0x46] // RIFF (WebP container)
+    ]
+  };
+
+  const fileSignatures = signatures[mimetype];
+  if (!fileSignatures) {
+    return false;
+  }
+
+  // Check if buffer starts with any of the valid signatures
+  return fileSignatures.some(signature => {
+    return signature.every((byte, index) => buffer[index] === byte);
+  });
 }
 
 // Validate multiple image files

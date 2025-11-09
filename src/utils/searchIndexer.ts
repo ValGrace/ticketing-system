@@ -28,7 +28,7 @@ export class SearchIndexer {
    */
   async indexAllListings(): Promise<void> {
     console.log('Starting bulk indexing of all listings...');
-    
+
     try {
       // Get all active listings
       const listings = await this.listingRepository.findByStatus('active');
@@ -42,7 +42,7 @@ export class SearchIndexer {
       // Index in batches to avoid overwhelming Elasticsearch
       const batchSize = 100;
       const batches = [];
-      
+
       for (let i = 0; i < listings.length; i += batchSize) {
         batches.push(listings.slice(i, i + batchSize));
       }
@@ -51,10 +51,12 @@ export class SearchIndexer {
 
       for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];
+        if (!batch) continue;
+
         console.log(`Processing batch ${i + 1}/${batches.length} (${batch.length} listings)`);
-        
+
         await this.searchService.bulkIndexListings(batch);
-        
+
         // Small delay between batches to avoid overwhelming the system
         if (i < batches.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -73,14 +75,14 @@ export class SearchIndexer {
    */
   async reindexAllListings(): Promise<void> {
     console.log('Starting complete reindexing...');
-    
+
     try {
       // Initialize/recreate the index
       await this.initializeIndex();
-      
+
       // Index all listings
       await this.indexAllListings();
-      
+
       console.log('Complete reindexing finished successfully');
     } catch (error) {
       console.error('Error during reindexing:', error);
@@ -93,7 +95,7 @@ export class SearchIndexer {
    */
   async indexListingsBySeller(sellerId: string): Promise<void> {
     console.log(`Indexing listings for seller: ${sellerId}`);
-    
+
     try {
       const listings = await this.listingRepository.findBySellerId(sellerId);
       console.log(`Found ${listings.length} listings for seller ${sellerId}`);
@@ -116,7 +118,7 @@ export class SearchIndexer {
    */
   async indexListingsByCategory(category: string): Promise<void> {
     console.log(`Indexing listings for category: ${category}`);
-    
+
     try {
       const listings = await this.listingRepository.findByCategory(category as any);
       console.log(`Found ${listings.length} listings for category ${category}`);
@@ -139,7 +141,7 @@ export class SearchIndexer {
    */
   async removeExpiredListings(): Promise<void> {
     console.log('Removing expired listings from search index...');
-    
+
     try {
       const expiredListings = await this.listingRepository.findExpiredListings();
       console.log(`Found ${expiredListings.length} expired listings to remove`);
@@ -187,7 +189,7 @@ export class SearchIndexer {
       // This would require additional Elasticsearch client methods
       // For now, just log that we're checking stats
       console.log('Checking index statistics...');
-      
+
       const isHealthy = await this.healthCheck();
       if (isHealthy) {
         console.log('Search service is operational');
@@ -205,7 +207,7 @@ export class SearchIndexer {
  */
 async function runIndexingScript(): Promise<void> {
   const command = process.argv[2];
-  
+
   if (!command) {
     console.log(`
 Usage: npm run search:index <command>
@@ -238,23 +240,23 @@ Examples:
       case 'init':
         await indexer.initializeIndex();
         break;
-      
+
       case 'index-all':
         await indexer.indexAllListings();
         break;
-      
+
       case 'reindex':
         await indexer.reindexAllListings();
         break;
-      
+
       case 'health':
         await indexer.healthCheck();
         break;
-      
+
       case 'stats':
         await indexer.getIndexStats();
         break;
-      
+
       default:
         console.error(`Unknown command: ${command}`);
         process.exit(1);

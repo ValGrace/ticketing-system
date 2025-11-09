@@ -3,6 +3,7 @@ import { Application } from 'express';
 import { createApp } from '../../index';
 import { DatabaseConnection } from '../../types';
 import { createTestDatabase, cleanupTestDatabase } from './database.test';
+import { expect } from '@jest/globals'
 
 describe('User Management Integration Tests', () => {
   let app: Application;

@@ -2,6 +2,7 @@ import { MpesaService } from './MpesaService';
 import { TransactionRepository } from '../models/TransactionRepository';
 import { TicketListingRepository } from '../models/TicketListingRepository';
 import { UserRepository } from '../models/UserRepository';
+import { webSocketService } from './WebSocketService';
 import { 
   Transaction, 
   PaymentRequest, 
@@ -157,10 +158,28 @@ export class PaymentService {
         // Update seller's transaction count
         await this.userRepo.incrementTransactionCount(transaction.sellerId);
         await this.userRepo.incrementTransactionCount(transaction.buyerId);
+
+        // Emit real-time transaction update
+        webSocketService.emitTransactionUpdate({
+          transactionId: transaction.id,
+          status: 'paid',
+          buyerId: transaction.buyerId,
+          sellerId: transaction.sellerId,
+          updatedAt: new Date(),
+        });
       } else {
         // Payment failed - cancel transaction and restore listing quantity
         await this.transactionRepo.updateStatus(transaction.id, 'cancelled');
         await this.restoreListingQuantity(transaction.listingId, transaction.quantity);
+
+        // Emit real-time transaction update
+        webSocketService.emitTransactionUpdate({
+          transactionId: transaction.id,
+          status: 'cancelled',
+          buyerId: transaction.buyerId,
+          sellerId: transaction.sellerId,
+          updatedAt: new Date(),
+        });
       }
 
       return paymentResult;
@@ -189,11 +208,30 @@ export class PaymentService {
       // Update transaction status
       await this.transactionRepo.updateStatus(transactionId, 'confirmed');
 
+      // Emit real-time update for confirmation
+      webSocketService.emitTransactionUpdate({
+        transactionId,
+        status: 'confirmed',
+        buyerId: transaction.buyerId,
+        sellerId: transaction.sellerId,
+        updatedAt: new Date(),
+      });
+
       // Release escrow funds
       const releaseResult = await this.releaseEscrowFunds(transactionId);
       
       if (releaseResult.success) {
         await this.transactionRepo.updateStatus(transactionId, 'completed');
+        
+        // Emit real-time update for completion
+        webSocketService.emitTransactionUpdate({
+          transactionId,
+          status: 'completed',
+          buyerId: transaction.buyerId,
+          sellerId: transaction.sellerId,
+          updatedAt: new Date(),
+        });
+        
         return true;
       }
 
@@ -242,6 +280,15 @@ export class PaymentService {
       };
 
       await this.createDisputeCase(disputeCase);
+
+      // Emit real-time transaction update
+      webSocketService.emitTransactionUpdate({
+        transactionId,
+        status: 'disputed',
+        buyerId: transaction.buyerId,
+        sellerId: transaction.sellerId,
+        updatedAt: new Date(),
+      });
 
       return disputeCase;
     });

@@ -13,7 +13,7 @@ export const initializeHealthRoutes = (service: HealthCheckService) => {
 };
 
 // Basic health check endpoint
-router.get('/health', async (req: Request, res: Response) => {
+router.get('/health', async (_req: Request, res: Response) => {
   try {
     const health = await healthCheckService.getSystemHealth();
     
@@ -32,7 +32,7 @@ router.get('/health', async (req: Request, res: Response) => {
 });
 
 // Liveness probe - simple check that the application is running
-router.get('/health/live', (req: Request, res: Response) => {
+router.get('/health/live', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'alive',
     timestamp: new Date().toISOString(),
@@ -42,7 +42,7 @@ router.get('/health/live', (req: Request, res: Response) => {
 });
 
 // Readiness probe - check if the application is ready to serve traffic
-router.get('/health/ready', async (req: Request, res: Response) => {
+router.get('/health/ready', async (_req: Request, res: Response) => {
   try {
     // Check critical services only
     const [databaseHealth, redisHealth] = await Promise.all([
@@ -71,7 +71,7 @@ router.get('/health/ready', async (req: Request, res: Response) => {
 });
 
 // Detailed health check for individual services
-router.get('/health/database', async (req: Request, res: Response) => {
+router.get('/health/database', async (_req: Request, res: Response) => {
   try {
     const health = await healthCheckService.checkDatabase();
     const statusCode = health.status === 'healthy' ? 200 : 503;
@@ -87,7 +87,7 @@ router.get('/health/database', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/health/redis', async (req: Request, res: Response) => {
+router.get('/health/redis', async (_req: Request, res: Response) => {
   try {
     const health = await healthCheckService.checkRedis();
     const statusCode = health.status === 'healthy' ? 200 : 503;
@@ -103,7 +103,7 @@ router.get('/health/redis', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/health/elasticsearch', async (req: Request, res: Response) => {
+router.get('/health/elasticsearch', async (_req: Request, res: Response) => {
   try {
     const health = await healthCheckService.checkElasticsearch();
     const statusCode = health.status === 'healthy' ? 200 : 
@@ -121,7 +121,7 @@ router.get('/health/elasticsearch', async (req: Request, res: Response) => {
 });
 
 // Metrics endpoint for Prometheus
-router.get('/metrics', async (req: Request, res: Response) => {
+router.get('/metrics', async (_req: Request, res: Response) => {
   try {
     res.set('Content-Type', register.contentType);
     const metrics = await register.metrics();
@@ -136,7 +136,7 @@ router.get('/metrics', async (req: Request, res: Response) => {
 });
 
 // System information endpoint
-router.get('/health/info', (req: Request, res: Response) => {
+router.get('/health/info', (_req: Request, res: Response) => {
   const memUsage = process.memoryUsage();
   
   res.json({

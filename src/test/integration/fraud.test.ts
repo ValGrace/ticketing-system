@@ -2,6 +2,7 @@ import request from 'supertest';
 import { createApp } from '../../index';
 import { connectDatabase, database } from '../../config/database';
 import { MigrationRunner } from '../../utils/migrationRunner';
+import { expect } from '@jest/globals'
 
 describe('Fraud Detection Integration Tests', () => {
   let app: any;

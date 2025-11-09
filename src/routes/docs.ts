@@ -41,13 +41,13 @@ router.use('/', swaggerUi.serve);
 router.get('/', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
 // Serve raw OpenAPI spec
-router.get('/json', (req, res) => {
+router.get('/json', (_req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
 // Serve OpenAPI spec in YAML format
-router.get('/yaml', (req, res) => {
+router.get('/yaml', (_req, res) => {
   const yaml = require('js-yaml');
   res.setHeader('Content-Type', 'text/yaml');
   res.send(yaml.dump(swaggerSpec));

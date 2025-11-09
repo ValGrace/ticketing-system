@@ -5,6 +5,7 @@ import { MigrationRunner } from '../../utils/migrationRunner';
 import { UserRepository } from '../../models/UserRepository';
 import { TicketListingRepository } from '../../models/TicketListingRepository';
 import { TransactionRepository } from '../../models/TransactionRepository';
+import { expect } from '@jest/globals'
 
 import { JwtUtils } from '../../utils/jwt';
 import { CreateUserInput, CreateListingInput, User, TicketListing } from '../../types';

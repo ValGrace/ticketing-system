@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from 'joi';
 import logger from '../config/logger';
+import { v4 as uuidv4 } from 'uuid';
 
 // Standard error response interface
 export interface ErrorResponse {
@@ -33,7 +34,7 @@ export class AppError extends Error {
   }
 }
 
-export class ValidationError extends AppError {
+export class ValidationErrors extends AppError {
   constructor(message: string, details?: any) {
     super(message, 400, 'VALIDATION_ERROR', details);
   }
@@ -80,7 +81,13 @@ const isJoiValidationError = (error: any): error is ValidationError => {
   return error.isJoi === true;
 };
 
-const isDatabaseError = (error: any): boolean => {
+interface DatabaseError extends Error {
+  code?: string;
+  routine?: string;
+}
+
+
+const isDatabaseError = (error: any): error is DatabaseError => {
   return error.code && (
     error.code.startsWith('23') || // PostgreSQL constraint violations
     error.code === 'ECONNREFUSED' ||
@@ -95,13 +102,32 @@ const isJWTError = (error: any): boolean => {
          error.name === 'NotBeforeError';
 };
 
+// Middleware to add correlation ID to requests
+export const correlationIdMiddleware = (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): void => {
+  // Use existing correlation ID or generate new one
+  const correlationId = (req.headers['x-correlation-id'] as string) || 
+                       (req.headers['x-request-id'] as string) || 
+                       uuidv4();
+  
+  req.headers['x-correlation-id'] = correlationId;
+  req.headers['x-request-id'] = correlationId;
+  
+  next();
+};
+
 // Error response formatter
 const formatErrorResponse = (
   error: Error | AppError,
   req: Request,
   isDevelopment: boolean = false
 ): ErrorResponse => {
-  const requestId = req.headers['x-request-id'] as string || 'unknown';
+  const requestId = (req.headers['x-correlation-id'] as string) || 
+                   (req.headers['x-request-id'] as string) || 
+                   'unknown';
   const timestamp = new Date().toISOString();
 
   // Handle custom app errors
@@ -165,7 +191,7 @@ const formatErrorResponse = (
     let code = 'DATABASE_ERROR';
 
     // PostgreSQL specific error codes
-    if (error.code === '23505') {
+    if (error.message === '23505') {
       message = 'Resource already exists';
       code = 'DUPLICATE_RESOURCE';
     } else if (error.code === '23503') {
@@ -224,12 +250,15 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const requestId = req.headers['x-request-id'] as string || 'unknown';
+  const isDevelopment = process.env["NODE_ENV"] === 'development';
+  const correlationId = (req.headers['x-correlation-id'] as string) || 
+                       (req.headers['x-request-id'] as string) || 
+                       'unknown';
 
   // Log the error
   const logContext = {
-    requestId,
+    correlationId,
+    requestId: correlationId,
     method: req.method,
     url: req.originalUrl,
     userAgent: req.get('User-Agent'),
@@ -238,7 +267,8 @@ export const errorHandler = (
     error: {
       name: error.name,
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
+      code: error instanceof AppError ? error.code : undefined
     }
   };
 
@@ -263,7 +293,7 @@ export const errorHandler = (
 };
 
 // 404 handler for unmatched routes
-export const notFoundHandler = (req: Request, res: Response, next: NextFunction): void => {
+export const notFoundHandler = (req: Request, _res: Response, next: NextFunction): void => {
   const error = new NotFoundError(`Route ${req.method} ${req.originalUrl}`);
   next(error);
 };

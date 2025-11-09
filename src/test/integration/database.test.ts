@@ -2,6 +2,7 @@ import { PostgreSQLConnection, connectDatabase, disconnectDatabase } from '../..
 import { MigrationRunner } from '../../utils/migrationRunner';
 import { UserRepository } from '../../models/UserRepository';
 import { DatabaseConnection } from '../../types';
+import { expect } from '@jest/globals'
 
 export async function createTestDatabase(): Promise<DatabaseConnection> {
   // Use test database

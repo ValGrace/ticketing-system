@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthService, LoginCredentials } from '../services/AuthService';
 import { CreateUserInput } from '../types';
+import { recordFailedLogin, clearLoginAttempts } from '../middleware/security';
 
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -50,9 +51,14 @@ export class AuthController {
    * Login user
    */
   login = async (req: Request, res: Response): Promise<void> => {
+    const identifier = req.bruteForceIdentifier || req.body.email || req.ip || 'unknown';
+    
     try {
       const credentials: LoginCredentials = req.body;
       const result = await this.authService.login(credentials);
+
+      // Clear failed login attempts on successful login
+      clearLoginAttempts(identifier);
 
       res.status(200).json({
         success: true,
@@ -65,6 +71,9 @@ export class AuthController {
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      
+      // Record failed login attempt
+      recordFailedLogin(identifier);
       
       let statusCode = 401;
       let errorCode = 'LOGIN_FAILED';

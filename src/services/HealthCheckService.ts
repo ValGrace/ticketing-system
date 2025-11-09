@@ -1,5 +1,4 @@
 import { Pool } from 'pg';
-import { createClient } from 'redis';
 import { Client } from '@elastic/elasticsearch';
 import logger from '../config/logger';
 
@@ -37,7 +36,7 @@ export class HealthCheckService {
 
     try {
       const client = await this.dbPool.connect();
-      const result = await client.query('SELECT 1 as health_check');
+      await client.query('SELECT 1 as health_check');
       client.release();
 
       const responseTime = Date.now() - startTime;

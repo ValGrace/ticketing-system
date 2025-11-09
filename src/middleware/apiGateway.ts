@@ -4,7 +4,13 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import { v4 as uuidv4 } from 'uuid';
-import logger from '../config/logger';
+import { 
+  sanitizeInput, 
+  detectSQLInjection, 
+  detectXSS, 
+  detectPathTraversal 
+} from './security';
+//import logger from '../config/logger';
 
 // Rate limiting configurations for different endpoints
 export const createRateLimiters = () => {
@@ -24,7 +30,7 @@ export const createRateLimiters = () => {
     legacyHeaders: false,
     keyGenerator: (req: Request) => {
       // Use user ID if authenticated, otherwise IP
-      return req.user?.userId || req.ip;
+      return req.user?.userId || req.ip || "anonymous";
     }
   });
 
@@ -59,7 +65,7 @@ export const createRateLimiters = () => {
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req: Request) => {
-      return req.user?.userId || req.ip;
+      return req.user?.userId || req.ip || "anonymous";
     }
   });
 
@@ -90,7 +96,7 @@ export const createRateLimiters = () => {
 // CORS configuration
 export const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    const allowedOrigins = process.env["ALLOWED_ORIGINS"]?.split(',') || [
       'http://localhost:3000',
       'http://localhost:3001',
       'https://ticket-platform.com'
@@ -209,7 +215,7 @@ export const requestTimeout = (timeoutMs: number = 30000) => {
 };
 
 // Health check bypass middleware
-export const healthCheckBypass = (req: Request, res: Response, next: NextFunction) => {
+export const healthCheckBypass = (req: Request, _res: Response, next: NextFunction) => {
   // Skip certain middleware for health check endpoints
   if (req.path.startsWith('/health') || req.path === '/metrics') {
     return next();
@@ -289,7 +295,12 @@ export const createApiGatewayMiddleware = () => {
       requestSizeLimit,
       apiVersioning,
       requestTimeout(),
-      validateContentType
+      validateContentType,
+      // Security middleware
+      sanitizeInput,
+      detectSQLInjection,
+      detectXSS,
+      detectPathTraversal
     ],
     
     // Rate limiters for specific route groups

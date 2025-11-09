@@ -6,6 +6,7 @@ import {
 } from '../types';
 import { UploadResult, uploadFilesToS3, deleteFilesFromS3, extractS3KeyFromUrl } from '../utils/fileUpload';
 import { SearchService } from './SearchService';
+import { webSocketService } from './WebSocketService';
 
 export class ListingService {
   private searchService: SearchService;
@@ -107,6 +108,27 @@ export class ListingService {
       } catch (searchError) {
         console.error('Error updating listing in search:', searchError);
         // Don't fail the entire operation if search update fails
+      }
+
+      // Emit real-time update
+      webSocketService.emitListingUpdate({
+        listingId: updatedListing.id,
+        status: updatedListing.status,
+        quantity: updatedListing.quantity,
+        askingPrice: updatedListing.askingPrice,
+        updatedAt: updatedListing.updatedAt,
+      });
+
+      // Check for price changes and emit notification
+      if (updates.askingPrice && existingListing.askingPrice !== updates.askingPrice) {
+        const changePercentage = ((updates.askingPrice - existingListing.askingPrice) / existingListing.askingPrice) * 100;
+        webSocketService.emitPriceChange({
+          listingId: updatedListing.id,
+          oldPrice: existingListing.askingPrice,
+          newPrice: updates.askingPrice,
+          changePercentage,
+          updatedAt: updatedListing.updatedAt,
+        });
       }
 
       return updatedListing;
@@ -255,7 +277,18 @@ export class ListingService {
         return false; // Event hasn't passed yet
       }
 
-      return await this.listingRepository.markAsExpired(id);
+      const result = await this.listingRepository.markAsExpired(id);
+      
+      if (result) {
+        // Emit real-time update
+        webSocketService.emitListingUpdate({
+          listingId: id,
+          status: 'expired',
+          updatedAt: new Date(),
+        });
+      }
+
+      return result;
     } catch (error) {
       console.error('Error marking listing as expired:', error);
       return false;
