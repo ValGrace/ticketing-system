@@ -2,6 +2,7 @@ import request from 'supertest';
 import { Application } from 'express';
 import { createApp } from '../../index';
 import { DatabaseConnection } from '../../types';
+import { expect } from '@jest/globals'
 import { createTestDatabase, cleanupTestDatabase } from '../integration/database.test';
 
 describe('Authentication Security Tests', () => {
