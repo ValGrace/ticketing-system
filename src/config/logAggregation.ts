@@ -359,7 +359,7 @@ async function queryElasticsearch(params: any): Promise<LogEntry[]> {
     throw new Error(`Elasticsearch query failed: ${response.statusText}`);
   }
 
-  const result = await response.json();
+  const result: any = await response.json();
   return result.hits.hits.map((hit: any) => hit._source);
 }
 
@@ -399,11 +399,11 @@ async function queryLoki(params: any): Promise<LogEntry[]> {
     throw new Error(`Loki query failed: ${response.statusText}`);
   }
 
-  const result = await response.json();
+  const result: any = await response.json();
   const logs: LogEntry[] = [];
 
   for (const stream of result.data.result) {
-    for (const [timestamp, line] of stream.values) {
+    for (const [line] of stream.values) {
       try {
         const log = JSON.parse(line);
         logs.push(log);
