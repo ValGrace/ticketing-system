@@ -21,7 +21,7 @@
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
     "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
+    "docker:down": "docker-compose down --volumes",
     "docker:logs": "docker-compose logs -f",
     "docker:build": "docker-compose build",
     "clean": "rimraf dist",
