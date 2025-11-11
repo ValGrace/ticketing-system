@@ -82,14 +82,16 @@ class DatabasePool {
   }
 
   public async testConnection(): Promise<boolean> {
+    let client;
     try {
-      const client = await this.pool.connect();
+      client = await this.pool.connect();
       await client.query('SELECT 1');
-      client.release();
       return true;
     } catch (error) {
       console.error('Database connection test failed:', error);
       return false;
+    } finally {
+      if (client) client.release();
     }
   }
 }

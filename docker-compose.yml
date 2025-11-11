@@ -1,8 +1,8 @@
-version: '4.0'
+version: '3.9'
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: ticket-platform-postgres
     environment:
       POSTGRES_DB: ticket_platform
@@ -55,7 +55,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@localhost:5432/ticket_platform
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ticket_platform
       - REDIS_URL=redis://redis:6379
       - ELASTICSEARCH_URL=http://elasticsearch:9200
     depends_on:

@@ -87,7 +87,7 @@ async function initializeMonitoring(): Promise<void> {
     
     // Initialize database pool for health checks
     const dbPool = new Pool({
-      host: process.env['DB_HOST'] || 'localhost',
+      host: process.env['DB_HOST'] || 'postgres',
       port: parseInt(process.env['DB_PORT'] || '5432'),
       database: process.env['DB_NAME'] || 'ticket_platform',
       user: process.env['DB_USER'] || 'postgres',

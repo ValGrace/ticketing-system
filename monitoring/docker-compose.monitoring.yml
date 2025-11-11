@@ -75,7 +75,7 @@ services:
     ports:
       - "9187:9187"
     environment:
-      - DATA_SOURCE_NAME=postgresql://postgres:password@host.docker.internal:5432/ticket_platform?sslmode=disable
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@host.docker.internal:5432/ticket_platform?sslmode=disable
     networks:
       - monitoring
 
