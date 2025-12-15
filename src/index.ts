@@ -35,6 +35,59 @@ dotenv.config();
 
 function createApp(dbConnection?: DatabaseConnection): express.Application {
   const app = express();
+  
+  // Add middleware to log header sizes and help debug 431 errors
+  app.use((req, _res, next) => {
+    const headerSize = JSON.stringify(req.headers).length;
+    if (headerSize > 8192) { // Default Node.js limit is 8KB
+      logger.warn('Large headers detected', {
+        headerSize,
+        url: req.url,
+        method: req.method,
+        userAgent: req.headers['user-agent']?.substring(0, 100),
+        authHeader: req.headers.authorization ? 'Present (length: ' + req.headers.authorization.length + ')' : 'Not present'
+      });
+    }
+    next();
+  });
+
+  // Add error handler for 431 errors specifically
+  app.use((err: any, req: any, res: any, next: any) => {
+    if (err.code === 'HPE_HEADER_OVERFLOW' || res.statusCode === 431) {
+      logger.error('HTTP 431 - Request Header Fields Too Large', {
+        url: req.url,
+        method: req.method,
+        headerSize: JSON.stringify(req.headers).length,
+        error: err.message
+      });
+      
+      return res.status(431).json({
+        error: {
+          code: 'REQUEST_HEADER_FIELDS_TOO_LARGE',
+          message: 'Request headers are too large. This often happens with large JWT tokens or cookies.',
+          suggestions: [
+            'Clear browser cookies and local storage',
+            'Use shorter JWT tokens',
+            'Check for duplicate or unnecessary headers'
+          ],
+          timestamp: new Date().toISOString(),
+          requestId: req.headers['x-request-id']
+        }
+      });
+    }
+    next(err);
+  });
+  
+  // Configure Express to handle larger request bodies
+  app.use(express.json({ 
+    limit: '10mb'
+  }));
+  app.use(express.urlencoded({ 
+    limit: '10mb', 
+    extended: true,
+    parameterLimit: 20000
+  }));
+  
   const db = dbConnection || database;
 
   // Initialize repositories
@@ -190,6 +243,7 @@ if (require.main === module) {
         port: PORT,
         environment: process.env['NODE_ENV'] || 'development',
         nodeVersion: process.version,
+        maxHttpHeaderSize: '32KB (configured to prevent 431 errors)',
       });
       logger.info('Available endpoints:', {
         health: `http://localhost:${PORT}/health`,

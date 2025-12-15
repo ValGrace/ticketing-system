@@ -62,7 +62,7 @@ class DatabasePool {
     // Handle pool errors
     this.pool.on('error', (err) => {
       console.error('Unexpected error on idle client', err);
-      process.exit(-1);
+      
     });
   }
 
@@ -85,7 +85,11 @@ class DatabasePool {
     let client;
     try {
       client = await this.pool.connect();
-      await client.query('SELECT 1');
+      await Promise.race([
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 2000)),
+        client.query('SELECT 1'),
+      ]);
+      
       return true;
     } catch (error) {
       console.error('Database connection test failed:', error);

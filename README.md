@@ -29,6 +29,15 @@ A secure marketplace for buying and selling tickets for various events including
 - Docker and Docker Compose
 - npm or yarn
 
+### Important: 431 Error Fix
+
+This application includes a fix for "431 Request Header Fields Too Large" errors that can occur with large JWT tokens or cookies. The server is configured with increased header size limits (32KB instead of the default 8KB).
+
+If you encounter 431 errors:
+1. Clear browser cookies and local storage
+2. Use the provided npm scripts which include the header size fix
+3. See [Troubleshooting 431 Errors](src/docs/troubleshooting-431-errors.md) for detailed solutions
+
 ### Installation
 
 1. Clone the repository

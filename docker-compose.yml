@@ -15,6 +15,12 @@ services:
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - ticket-platform
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ticket_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
   # Redis Cache
   redis:
@@ -67,9 +73,9 @@ services:
     command: npm run dev
 
 volumes:
-  postgres_data:
-  redis_data:
-  elasticsearch_data:
+  - postgres_data:/var/lib/postgresql/data
+  - redis_data:/data
+  - elasticsearch_data:/usr/share/elasticsearch/data
 
 networks:
   ticket-platform:
