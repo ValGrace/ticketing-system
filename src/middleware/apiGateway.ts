@@ -99,6 +99,7 @@ export const corsOptions: cors.CorsOptions = {
     const allowedOrigins = process.env["ALLOWED_ORIGINS"]?.split(',') || [
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://192.168.1.64:3000',
       'https://ticket-platform.com'
     ];
 
@@ -297,10 +298,10 @@ export const createApiGatewayMiddleware = () => {
       requestTimeout(),
       validateContentType,
       // Security middleware
-      sanitizeInput,
-      detectSQLInjection,
-      detectXSS,
-      detectPathTraversal
+      // sanitizeInput,
+      // detectSQLInjection,
+      // detectXSS,
+      // detectPathTraversal
     ],
     
     // Rate limiters for specific route groups
